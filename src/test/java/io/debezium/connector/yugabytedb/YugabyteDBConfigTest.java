@@ -68,14 +68,13 @@ public class YugabyteDBConfigTest extends YugabyteDBContainerTestBase {
     }
 
     // This verifies that the connector should not be running if a wrong table.include.list is provided
-    @ParameterizedTest
-    @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-    public void shouldThrowExceptionWithWrongIncludeList(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+    @Test
+    public void shouldThrowExceptionWithWrongIncludeList() throws Exception {
         TestHelper.dropAllSchemas();
 
         TestHelper.executeDDL("yugabyte_create_tables.ddl");
 
-        String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "all_types", consistentSnapshot, useSnapshot);
+        String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "all_types", true, false);
 
         // Create another table which will not be a part of the DB stream ID
         TestHelper.execute("CREATE TABLE not_part_of_stream (id INT PRIMARY KEY);");
@@ -95,14 +94,13 @@ public class YugabyteDBConfigTest extends YugabyteDBContainerTestBase {
 
     // This test verifies that the connector configuration works properly even if there are tables of the same name
     // in another database
-    @ParameterizedTest
-    @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-    public void shouldWorkWithSameNameTablePresentInAnotherDatabase(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+    @Test
+    public void shouldWorkWithSameNameTablePresentInAnotherDatabase() throws Exception {
         TestHelper.dropAllSchemas();
 
         TestHelper.executeDDL("yugabyte_create_tables.ddl");
 
-        String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "t1", consistentSnapshot, useSnapshot);
+        String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "t1", true, false);
 
         // Create a same table in another database
         // This is to ensure that when the yb-client returns all the tables, then the YugabyteDBgRPCConnector
@@ -147,15 +145,14 @@ public class YugabyteDBConfigTest extends YugabyteDBContainerTestBase {
         assertConnectorNotRunning();
     }
 
-    @ParameterizedTest
-    @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-    public void shouldNotWorkWithWrongDatabaseName(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+    @Test
+    public void shouldNotWorkWithWrongDatabaseName() throws Exception {
         TestHelper.dropAllSchemas();
 
         TestHelper.executeDDL("yugabyte_create_tables.ddl");
 
         // Create a dbStreamId on the default namespace but provide a different namespace to the configuration
-        String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "t1", consistentSnapshot, useSnapshot);
+        String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "t1", true, false);
 
         String wrongNamespaceName = "wrong_namespace";
         Configuration.Builder configBuilder = TestHelper.getConfigBuilder(wrongNamespaceName, "public.t1", dbStreamId);
@@ -169,15 +166,14 @@ public class YugabyteDBConfigTest extends YugabyteDBContainerTestBase {
         assertConnectorNotRunning();
     }
 
-    @ParameterizedTest
-    @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-    public void shouldNotAuthenticateWithWrongUsername(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+    @Test
+    public void shouldNotAuthenticateWithWrongUsername() throws Exception {
         TestHelper.dropAllSchemas();
 
         TestHelper.executeDDL("yugabyte_create_tables.ddl");
 
         // Create a dbStreamId on the default namespace
-        String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "t1", consistentSnapshot, useSnapshot);
+        String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "t1", true, false);
 
         Configuration.Builder configBuilderWithWrongUser = TestHelper.getConfigBuilder("public.t1", dbStreamId);
         configBuilderWithWrongUser.with(YugabyteDBConnectorConfig.USER, "wrong_username");
@@ -190,15 +186,14 @@ public class YugabyteDBConfigTest extends YugabyteDBContainerTestBase {
         assertConnectorNotRunning();
     }
 
-    @ParameterizedTest
-    @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-    public void shouldNotAuthenticateWithWrongPassword(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+    @Test
+    public void shouldNotAuthenticateWithWrongPassword() throws Exception {
         TestHelper.dropAllSchemas();
 
         TestHelper.executeDDL("yugabyte_create_tables.ddl");
 
         // Create a dbStreamId on the default namespace
-        String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "t1", consistentSnapshot, useSnapshot);
+        String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "t1", true, false);
 
         Configuration.Builder configBuilderWithWrongPassword = TestHelper.getConfigBuilder("public.t1", dbStreamId);
         configBuilderWithWrongPassword.with(YugabyteDBConnectorConfig.PASSWORD, "wrong_password");
@@ -211,15 +206,14 @@ public class YugabyteDBConfigTest extends YugabyteDBContainerTestBase {
         assertConnectorNotRunning();
     }
 
-    @ParameterizedTest
-    @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-    public void shouldThrowProperErrorMessageWithEmptyTableList(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+    @Test
+    public void shouldThrowProperErrorMessageWithEmptyTableList() throws Exception {
         TestHelper.dropAllSchemas();
 
         TestHelper.executeDDL("yugabyte_create_tables.ddl");
 
         // Create a dbStreamId on the default namespace
-        String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "t1", consistentSnapshot, useSnapshot);
+        String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "t1", true, false);
 
         Configuration.Builder configBuilderWithWrongPassword = TestHelper.getConfigBuilder("", dbStreamId);
         startEngine(configBuilderWithWrongPassword, (success, message, error) -> {
@@ -231,15 +225,14 @@ public class YugabyteDBConfigTest extends YugabyteDBContainerTestBase {
         assertConnectorNotRunning();
     }
 
-    @ParameterizedTest
-    @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-    public void shouldThrowExceptionIfTheProvidedTableDoesNotExist(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+    @Test
+    public void shouldThrowExceptionIfTheProvidedTableDoesNotExist() throws Exception {
         TestHelper.dropAllSchemas();
 
         TestHelper.executeDDL("yugabyte_create_tables.ddl");
 
         // Create a dbStreamId on the default namespace
-        String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "t1", consistentSnapshot, useSnapshot);
+        String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "t1", true, false);
 
         Configuration.Builder configBuilderWithWrongPassword = TestHelper.getConfigBuilder("public.non_existent_table", dbStreamId);
         startEngine(configBuilderWithWrongPassword, (success, message, error) -> {
@@ -270,13 +263,12 @@ public class YugabyteDBConfigTest extends YugabyteDBContainerTestBase {
         assertConnectorNotRunning();
     }
 
-    @ParameterizedTest
-    @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-    public void throwProperErrorMessageIfStreamIdIsNotAssociatedWithAnyTable(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+    @Test
+    public void throwProperErrorMessageIfStreamIdIsNotAssociatedWithAnyTable) throws Exception {
         TestHelper.dropAllSchemas();
 
         TestHelper.execute("CREATE TABLE dummy_table (id INT);");
-        String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "dummy_table", consistentSnapshot, useSnapshot);
+        String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "dummy_table", true, false);
 
         Configuration.Builder configBuilderWithHollowStreamId = 
             TestHelper.getConfigBuilder("public.dummy_table", dbStreamId);
@@ -285,28 +277,6 @@ public class YugabyteDBConfigTest extends YugabyteDBContainerTestBase {
             assertFalse(success);
 
             assertTrue(error.getMessage().contains("The provided stream ID is not associated with any table"));
-        });
-
-        assertConnectorNotRunning();
-    }
-
-    @ParameterizedTest
-    @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-    @Disabled("Disabled in lieu of transaction ordering with logical replication")
-    public void throwExceptionIfExplicitCheckpointingNotConfiguredWithConsistency(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
-        TestHelper.dropAllSchemas();
-
-        // Create a stream ID with IMPLICIT checkpointing and then deploy it in a consistent streaming setup.
-        TestHelper.execute("CREATE TABLE dummy_table (id INT PRIMARY KEY);");
-        final String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "dummy_table", false,
-                false, consistentSnapshot, useSnapshot);
-        Configuration.Builder configBuilder = TestHelper.getConfigBuilder("public.dummy_table", dbStreamId);
-        configBuilder.with(YugabyteDBConnectorConfig.TRANSACTION_ORDERING, true);
-
-        start(YugabyteDBgRPCConnector.class, configBuilder.build(), (success, message, error) -> {
-           assertFalse(success);
-
-           assertTrue(error.getMessage().contains("Explicit checkpointing not enabled in consistent streaming mode"));
         });
 
         assertConnectorNotRunning();
@@ -364,27 +334,5 @@ public class YugabyteDBConfigTest extends YugabyteDBContainerTestBase {
         start(YugabyteDBgRPCConnector.class, configBuilder.build(), (success, message, error) -> {
             assertTrue(success);
         });
-    }
-
-    @ParameterizedTest
-    @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-    @Disabled("Disabled in lieu of transaction ordering with logical replication")
-    public void throwExceptionWithIncorrectTaskCountWithTransactionOrdering(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
-        TestHelper.dropAllSchemas();
-
-        // Create a stream ID with IMPLICIT checkpointing and then deploy it in a consistent streaming setup.
-        TestHelper.execute("CREATE TABLE dummy_table (id INT PRIMARY KEY);");
-        final String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "dummy_table", consistentSnapshot, useSnapshot);
-        Configuration.Builder configBuilder = TestHelper.getConfigBuilder("public.dummy_table", dbStreamId);
-        configBuilder.with(YugabyteDBConnectorConfig.TRANSACTION_ORDERING, true);
-        configBuilder.with("tasks.max", 2);
-
-        start(YugabyteDBgRPCConnector.class, configBuilder.build(), (success, message, error) -> {
-           assertFalse(success);
-
-           assertTrue(error.getMessage().contains("Transaction ordering is only supported with 1 task"));
-        });
-
-        assertConnectorNotRunning();
     }
 }
