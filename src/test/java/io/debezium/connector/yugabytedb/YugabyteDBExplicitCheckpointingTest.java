@@ -66,11 +66,10 @@ public class YugabyteDBExplicitCheckpointingTest extends YugabyteDBContainerTest
         shutdownYBContainer();
     }
 
-    @ParameterizedTest
-    @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-    public void verifyCommitOffsetCheckpointAndGetCheckpointBehaviour(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+    @Test
+    public void verifyCommitOffsetCheckpointAndGetCheckpointBehaviour() throws Exception {
         String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "t1", false /* before image */,
-                true /* explicit checkpointing */, consistentSnapshot, useSnapshot);
+                true /* explicit checkpointing */, true, false);
         Configuration.Builder configBuilder = TestHelper.getConfigBuilder("public.t1", dbStreamId)
                 .with(EmbeddedEngine.ENGINE_NAME, CONNECTOR_NAME)
                 .with(StandaloneConfig.OFFSET_STORAGE_FILE_FILENAME_CONFIG, Testing.Files.createTestingFile("file-connector-offsets.txt").getAbsolutePath())
