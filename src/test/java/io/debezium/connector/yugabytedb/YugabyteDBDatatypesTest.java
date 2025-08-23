@@ -15,7 +15,6 @@ import org.apache.kafka.connect.source.SourceRecord;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.yb.client.*;
 
@@ -174,13 +173,12 @@ public class YugabyteDBDatatypesTest extends YugabyteDBContainerTestBase {
         assertTrue(dbStreamId.length() > 0);
     }
 
-    @ParameterizedTest
-    @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-    public void testRecordConsumption(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+    @Test
+    public void testRecordConsumption() throws Exception {
         TestHelper.dropAllSchemas();
         TestHelper.executeDDL("yugabyte_create_tables.ddl");
 
-        String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "t1", consistentSnapshot, useSnapshot);
+        String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "t1", true, false);
         Configuration.Builder configBuilder = TestHelper.getConfigBuilder("public.t1", dbStreamId);
         startEngine(configBuilder);
         final long recordsCount = 1;
@@ -196,16 +194,14 @@ public class YugabyteDBDatatypesTest extends YugabyteDBContainerTestBase {
                 }).get();
     }
 
-    @ParameterizedTest
-    @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-    public void shouldNotCauseDataLossIfThereIsErrorWhileProcessingBatch(
-        boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+    @Test
+    public void shouldNotCauseDataLossIfThereIsErrorWhileProcessingBatch() throws Exception {
         TestHelper.dropAllSchemas();
         TestHelper.executeDDL("yugabyte_create_tables.ddl");
 
         LogInterceptor logInterceptor = new LogInterceptor(YugabyteDBStreamingChangeEventSource.class);
 
-        String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "t1", consistentSnapshot, useSnapshot);
+        String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "t1", true, false);
         Configuration.Builder configBuilder = TestHelper.getConfigBuilder("public.t1", dbStreamId);
         configBuilder.with(YugabyteDBConnectorConfig.CONNECTOR_RETRY_DELAY_MS, 60_000);
         startEngine(configBuilder);
@@ -231,13 +227,12 @@ public class YugabyteDBDatatypesTest extends YugabyteDBContainerTestBase {
         waitAndFailIfCannotConsume(records, recordsCount);
     }
 
-    @ParameterizedTest
-    @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-    public void testRangeSplitTables(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+    @Test
+    public void testRangeSplitTables() throws Exception {
         TestHelper.dropAllSchemas();
         TestHelper.executeDDL("yugabyte_create_tables.ddl");
 
-        String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "t1_range", consistentSnapshot, useSnapshot);
+        String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "t1_range", true, false);
         LOGGER.info("Created stream ID: {}", dbStreamId);
 
         Configuration.Builder configBuilder = TestHelper.getConfigBuilder("public.t1_range", dbStreamId);
@@ -251,13 +246,12 @@ public class YugabyteDBDatatypesTest extends YugabyteDBContainerTestBase {
         waitAndFailIfCannotConsume(new ArrayList<>(), recordsCount);
     }
 
-    @ParameterizedTest
-    @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-    public void verifyConsumptionAfterRestart(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+    @Test
+    public void verifyConsumptionAfterRestart() throws Exception {
         TestHelper.dropAllSchemas();
         TestHelper.executeDDL("yugabyte_create_tables.ddl");
 
-        String dbStreamId = TestHelper.getNewDbStreamId(DEFAULT_DB_NAME, "t1", consistentSnapshot, useSnapshot);
+        String dbStreamId = TestHelper.getNewDbStreamId(DEFAULT_DB_NAME, "t1", true, false);
         Configuration.Builder configBuilder = TestHelper.getConfigBuilder("public.t1", dbStreamId);
         startEngine(configBuilder);
         awaitUntilConnectorIsReady();
@@ -280,9 +274,8 @@ public class YugabyteDBDatatypesTest extends YugabyteDBContainerTestBase {
         ybClient.close();
     }
 
-    @ParameterizedTest
-    @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-    public void testRecordDeleteFieldWithYBExtractNewRecordState(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+    @Test
+    public void testRecordDeleteFieldWithYBExtractNewRecordState() throws Exception {
         TestHelper.dropAllSchemas();
         TestHelper.executeDDL("yugabyte_create_tables.ddl");
 
@@ -293,7 +286,7 @@ public class YugabyteDBDatatypesTest extends YugabyteDBContainerTestBase {
         configs.put(ExtractNewRecordStateConfigDefinition.HANDLE_DELETES.toString(), "rewrite");
         transformation.configure(configs);
 
-        String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "t1", consistentSnapshot, useSnapshot);
+        String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "t1", true, false);
         Configuration.Builder configBuilder = TestHelper.getConfigBuilder("public.t1", dbStreamId);
         startEngine(configBuilder);
         final long rowsCount = 1;
@@ -334,7 +327,7 @@ public class YugabyteDBDatatypesTest extends YugabyteDBContainerTestBase {
             configs.put(ExtractNewRecordStateConfigDefinition.DROP_TOMBSTONES.toString(), String.valueOf(dropTombstones));
             transformation.configure(configs);
 
-            String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "t1", false, false);
+            String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "t1", true, false);
             Configuration.Builder configBuilder = TestHelper.getConfigBuilder("public.t1", dbStreamId);
             startEngine(configBuilder);
             final long rowsCount = 1;
@@ -377,13 +370,12 @@ public class YugabyteDBDatatypesTest extends YugabyteDBContainerTestBase {
         }
     }
 
-    @ParameterizedTest
-    @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-    public void testSmallLoad(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+    @Test
+    public void testSmallLoad() throws Exception {
         TestHelper.dropAllSchemas();
         TestHelper.executeDDL("yugabyte_create_tables.ddl");
 
-        String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "t1", consistentSnapshot, useSnapshot);
+        String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "t1", true, false);
         Configuration.Builder configBuilder = TestHelper.getConfigBuilder("public.t1", dbStreamId);
         startEngine(configBuilder);
         final long recordsCount = 75;
@@ -396,13 +388,12 @@ public class YugabyteDBDatatypesTest extends YugabyteDBContainerTestBase {
         waitAndFailIfCannotConsume(records, recordsCount);
     }
 
-    @ParameterizedTest
-    @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-    public void testVerifyValue(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+    @Test
+    public void testVerifyValue() throws Exception {
         TestHelper.dropAllSchemas();
         TestHelper.executeDDL("yugabyte_create_tables.ddl");
 
-        String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "t1", consistentSnapshot, useSnapshot);
+        String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "t1", true, false);
         Configuration.Builder configBuilder = TestHelper.getConfigBuilder("public.t1", dbStreamId);
         startEngine(configBuilder);
         final long recordsCount = 1;
@@ -418,13 +409,12 @@ public class YugabyteDBDatatypesTest extends YugabyteDBContainerTestBase {
                 }).get();
     }
 
-    @ParameterizedTest
-    @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-    public void testNonPublicSchema(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+    @Test
+    public void testNonPublicSchema() throws Exception {
         TestHelper.dropAllSchemas();
         TestHelper.executeDDL("tables_in_non_public_schema.ddl");
 
-        String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "table_in_schema", consistentSnapshot, useSnapshot);
+        String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "table_in_schema", true, false);
         Configuration.Builder configBuilder = TestHelper.getConfigBuilder("test_schema.table_in_schema", dbStreamId);
         startEngine(configBuilder);
         final long recordsCount = 1;
@@ -440,13 +430,12 @@ public class YugabyteDBDatatypesTest extends YugabyteDBContainerTestBase {
     }
 
     // GitHub issue: https://github.com/yugabyte/debezium-connector-yugabytedb/issues/134
-    @ParameterizedTest
-    @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-    public void updatePrimaryKeyToSameValue(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+    @Test
+    public void updatePrimaryKeyToSameValue() throws Exception {
         TestHelper.dropAllSchemas();
         TestHelper.executeDDL("yugabyte_create_tables.ddl");
 
-        String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "t1", consistentSnapshot, useSnapshot);
+        String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "t1", true, false);
 
         // Ignore tombstones since we will not need them for verification.
         Configuration.Builder configBuilder = TestHelper.getConfigBuilder("public.t1", dbStreamId);
@@ -469,13 +458,12 @@ public class YugabyteDBDatatypesTest extends YugabyteDBContainerTestBase {
         assertEquals("c", TestHelper.getOpValue(records.get(2)));
     }
 
-    @ParameterizedTest
-    @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-    public void shouldWorkWithNullValues(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+    @Test
+    public void shouldWorkWithNullValues() throws Exception {
         TestHelper.dropAllSchemas();
         TestHelper.executeDDL("yugabyte_create_tables.ddl");
 
-        String dbStreamId = TestHelper.getNewDbStreamId(DEFAULT_DB_NAME, "t1", consistentSnapshot, useSnapshot);
+        String dbStreamId = TestHelper.getNewDbStreamId(DEFAULT_DB_NAME, "t1", true, false);
 
         String insertFormatString = "INSERT INTO t1 VALUES (%d, 'Vaibhav', 'Kushwaha');";
 
