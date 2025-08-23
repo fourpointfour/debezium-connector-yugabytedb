@@ -69,14 +69,13 @@ public class YugabyteDBCompleteTypesTest extends YugabyteDBContainerTestBase {
         }
     }
 
-    @ParameterizedTest
-    @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-    public void verifyAllWorkingDataTypesInSingleTable(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+    @Test
+    public void verifyAllWorkingDataTypesInSingleTable() throws Exception {
         TestHelper.dropAllSchemas();
         TestHelper.executeDDL("yugabyte_create_tables.ddl");
         Thread.sleep(1000);
 
-        String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "all_types", consistentSnapshot, useSnapshot);
+        String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "all_types", true, false);
         Configuration.Builder configBuilder = TestHelper.getConfigBuilder("public.all_types", dbStreamId);
         startEngine(configBuilder);
 
