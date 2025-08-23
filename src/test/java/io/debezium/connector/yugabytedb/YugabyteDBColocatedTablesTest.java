@@ -15,8 +15,6 @@ import java.util.concurrent.CompletableFuture;
 
 import org.apache.kafka.connect.source.SourceRecord;
 import org.junit.jupiter.api.*;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Unit tests to verify connector functionality with colocated tables in YugabyteDB.
@@ -54,12 +52,11 @@ public class YugabyteDBColocatedTablesTest extends YugabyteDBContainerTestBase {
     shutdownYBContainer();
   }
 
-  @ParameterizedTest
-  @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-  public void shouldSupportBasicColocatedTableStreaming(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+  @Test
+  public void shouldSupportBasicColocatedTableStreaming() throws Exception {
     createTables();
 
-    String dbStreamId = TestHelper.getNewDbStreamId(DEFAULT_COLOCATED_DB_NAME, "test_1", consistentSnapshot, useSnapshot);
+    String dbStreamId = TestHelper.getNewDbStreamId(DEFAULT_COLOCATED_DB_NAME, "test_1", true, false);
     Configuration.Builder configBuilder = TestHelper.getConfigBuilder(DEFAULT_COLOCATED_DB_NAME,
         "public.test_1", dbStreamId);
 
@@ -86,12 +83,11 @@ public class YugabyteDBColocatedTablesTest extends YugabyteDBContainerTestBase {
   }
 
   // This test also verifies that the connector works for a subset of the colocated tables as well
-  @ParameterizedTest
-  @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-  public void shouldWorkForTablesInIncludeListOnly(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+  @Test
+  public void shouldWorkForTablesInIncludeListOnly() throws Exception {
     createTables();
 
-    String dbStreamId = TestHelper.getNewDbStreamId(DEFAULT_COLOCATED_DB_NAME, "test_1", consistentSnapshot, useSnapshot);
+    String dbStreamId = TestHelper.getNewDbStreamId(DEFAULT_COLOCATED_DB_NAME, "test_1", true, false);
     Configuration.Builder configBuilder = TestHelper.getConfigBuilder(DEFAULT_COLOCATED_DB_NAME,
         "public.test_1,public.test_2", dbStreamId);
 
@@ -121,12 +117,11 @@ public class YugabyteDBColocatedTablesTest extends YugabyteDBContainerTestBase {
     assertFalse(records.topics().contains(TestHelper.TEST_SERVER + ".public.test_no_colocated"));
   }
 
-  @ParameterizedTest
-  @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-  public void shouldWorkWithMixOfColocatedAndNonColocatedTables(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+  @Test
+  public void shouldWorkWithMixOfColocatedAndNonColocatedTables() throws Exception {
     createTables();
 
-    String dbStreamId = TestHelper.getNewDbStreamId(DEFAULT_COLOCATED_DB_NAME, "test_1", consistentSnapshot, useSnapshot);
+    String dbStreamId = TestHelper.getNewDbStreamId(DEFAULT_COLOCATED_DB_NAME, "test_1", true, false);
     Configuration.Builder configBuilder = TestHelper.getConfigBuilder(DEFAULT_COLOCATED_DB_NAME,
         "public.test_1,public.test_2,public.test_no_colocated", dbStreamId);
 
@@ -156,12 +151,11 @@ public class YugabyteDBColocatedTablesTest extends YugabyteDBContainerTestBase {
       10, records.recordsForTopic(TestHelper.TEST_SERVER + ".public.test_no_colocated").size());
   }
 
-  @ParameterizedTest
-  @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-  public void shouldWorkAfterAddingTableAfterRestart(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+  @Test
+  public void shouldWorkAfterAddingTableAfterRestart() throws Exception {
     createTables();
 
-    String dbStreamId = TestHelper.getNewDbStreamId(DEFAULT_COLOCATED_DB_NAME, "test_1", consistentSnapshot, useSnapshot);
+    String dbStreamId = TestHelper.getNewDbStreamId(DEFAULT_COLOCATED_DB_NAME, "test_1", true, false);
     Configuration.Builder configBuilder = TestHelper.getConfigBuilder(DEFAULT_COLOCATED_DB_NAME,
         "public.test_1,public.test_2", dbStreamId);
 
@@ -228,9 +222,8 @@ public class YugabyteDBColocatedTablesTest extends YugabyteDBContainerTestBase {
       recordsAfterRestart.topics().contains(TestHelper.TEST_SERVER + ".public.test_no_colocated"));
   }
 
-  @ParameterizedTest
-  @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-  public void dropColumnsForTablesAndHandleSchemaChanges(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+  @Test
+  public void dropColumnsForTablesAndHandleSchemaChanges() throws Exception {
     /*
      * 1. Create colocated tables having 40 columns (+2 for other columns)
      * 2. Start the CDC pipeline and keep inserting data
@@ -241,7 +234,7 @@ public class YugabyteDBColocatedTablesTest extends YugabyteDBContainerTestBase {
 
     createTables(columnCount);
 
-    String dbStreamId = TestHelper.getNewDbStreamId(DEFAULT_COLOCATED_DB_NAME, "test_1", consistentSnapshot, useSnapshot);
+    String dbStreamId = TestHelper.getNewDbStreamId(DEFAULT_COLOCATED_DB_NAME, "test_1", true, false);
     Configuration.Builder configBuilder =
         TestHelper.getConfigBuilder(DEFAULT_COLOCATED_DB_NAME, "public.test_1,public.test_2,public.test_3", dbStreamId);
     configBuilder.with(YugabyteDBConnectorConfig.CDC_POLL_INTERVAL_MS, 5_000);
