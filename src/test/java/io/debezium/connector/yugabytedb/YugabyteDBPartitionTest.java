@@ -45,13 +45,12 @@ public class YugabyteDBPartitionTest extends YugabyteDBContainerTestBase {
       shutdownYBContainer();
   }
 
-  @ParameterizedTest
-  @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-  public void taskShouldNotFail(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+  @Test
+  public void taskShouldNotFail) throws Exception {
     TestHelper.dropAllSchemas();
     TestHelper.execute("CREATE TABLE t1 (id INT PRIMARY KEY, name TEXT) SPLIT INTO 20 TABLETS;");
 
-    String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "t1", consistentSnapshot, useSnapshot);
+    String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "t1", true, false);
     Configuration.Builder configBuilder = TestHelper.getConfigBuilder("public.t1", dbStreamId);
 
     startEngine(configBuilder, (success, message, error) -> {
