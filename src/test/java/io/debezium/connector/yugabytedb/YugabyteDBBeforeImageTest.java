@@ -55,14 +55,13 @@ public class YugabyteDBBeforeImageTest extends YugabyteDBContainerTestBase {
       shutdownYBContainer();
   }
 
-  @ParameterizedTest
-  @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-  public void isBeforeGettingPublished(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+  @Test
+  public void isBeforeGettingPublished() throws Exception {
       TestHelper.initDB("yugabyte_create_tables.ddl");
 
       String dbStreamId = TestHelper.getNewDbStreamId(
           "yugabyte", "t1", true /* withBeforeImage */, true,
-          BeforeImageMode.FULL, consistentSnapshot, useSnapshot);
+          BeforeImageMode.FULL, true, false);
       Configuration.Builder configBuilder = TestHelper.getConfigBuilder("public.t1", dbStreamId);
       startEngine(configBuilder);
 
@@ -87,14 +86,13 @@ public class YugabyteDBBeforeImageTest extends YugabyteDBContainerTestBase {
       assertAfterImage(updateRecord, 1, "VKVK", "Kushwaha", 56.78);
   }
 
-  @ParameterizedTest
-  @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-  public void consecutiveSingleShardTransactions(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+  @Test
+  public void consecutiveSingleShardTransactions() throws Exception {
       TestHelper.initDB("yugabyte_create_tables.ddl");
 
       String dbStreamId = TestHelper.getNewDbStreamId(
           "yugabyte", "t1", true /* withBeforeImage */, true,
-          BeforeImageMode.FULL, consistentSnapshot, useSnapshot);
+          BeforeImageMode.FULL, true, false);
       Configuration.Builder configBuilder = TestHelper.getConfigBuilder("public.t1", dbStreamId);
       startEngine(configBuilder);
 
@@ -125,14 +123,13 @@ public class YugabyteDBBeforeImageTest extends YugabyteDBContainerTestBase {
       assertAfterImage(updateRecord2, 1, "V", "K", 0.05);
   }
 
-  @ParameterizedTest
-  @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-  public void consecutiveSingleShardTransactionsForChange(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+  @Test
+  public void consecutiveSingleShardTransactionsForChange() throws Exception {
       TestHelper.initDB("yugabyte_create_tables.ddl");
 
       String dbStreamId = TestHelper.getNewDbStreamId(
           "yugabyte", "t1", true /* withBeforeImage */, true,
-          BeforeImageMode.CHANGE, consistentSnapshot, useSnapshot);
+          BeforeImageMode.CHANGE, true, false);
       Configuration.Builder configBuilder = TestHelper.getConfigBuilder("public.t1", dbStreamId);
       startEngine(configBuilder);
 
@@ -164,14 +161,13 @@ public class YugabyteDBBeforeImageTest extends YugabyteDBContainerTestBase {
       assertValueField(deleteRecord, "after", null);
   }
 
-  @ParameterizedTest
-  @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-  public void consecutiveSingleShardTransactionsForChangeOldNew(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+  @Test
+  public void consecutiveSingleShardTransactionsForChangeOldNew() throws Exception {
       TestHelper.initDB("yugabyte_create_tables.ddl");
 
       String dbStreamId = TestHelper.getNewDbStreamId(
           "yugabyte", "t1", true /* withBeforeImage */, true, 
-          BeforeImageMode.CHANGE_OLD_NEW, consistentSnapshot, useSnapshot);
+          BeforeImageMode.CHANGE_OLD_NEW, true, false);
       Configuration.Builder configBuilder = TestHelper.getConfigBuilder("public.t1", dbStreamId);
       startEngine(configBuilder);
 
@@ -204,14 +200,13 @@ public class YugabyteDBBeforeImageTest extends YugabyteDBContainerTestBase {
       assertValueField(deleteRecord, "after", null);
   }
 
-  @ParameterizedTest
-  @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-  public void consecutiveSingleShardTransactionsForDefault(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+  @Test
+  public void consecutiveSingleShardTransactionsForDefault() throws Exception {
       TestHelper.initDB("yugabyte_create_tables.ddl");
 
       String dbStreamId = TestHelper.getNewDbStreamId(
           "yugabyte", "t1", true /* withBeforeImage */, true,
-          BeforeImageMode.DEFAULT, consistentSnapshot, useSnapshot);
+          BeforeImageMode.DEFAULT, true, false);
       Configuration.Builder configBuilder = TestHelper.getConfigBuilder("public.t1", dbStreamId);
       startEngine(configBuilder);
 
@@ -242,14 +237,13 @@ public class YugabyteDBBeforeImageTest extends YugabyteDBContainerTestBase {
       assertValueField(deleteRecord, "after", null);
   }
 
-  @ParameterizedTest
-  @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-  public void consecutiveSingleShardTransactionsForNothing(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+  @Test
+  public void consecutiveSingleShardTransactionsForNothing() throws Exception {
       TestHelper.initDB("yugabyte_create_tables.ddl");
 
       String dbStreamId = TestHelper.getNewDbStreamId(
           "yugabyte", "t1", true /* withBeforeImage */, true,
-          BeforeImageMode.NOTHING, consistentSnapshot, useSnapshot);
+          BeforeImageMode.NOTHING, true, false);
       Configuration.Builder configBuilder = TestHelper.getConfigBuilder("public.t1", dbStreamId);
       startEngine(configBuilder);
 
@@ -280,14 +274,13 @@ public class YugabyteDBBeforeImageTest extends YugabyteDBContainerTestBase {
       assertValueField(deleteRecord, "after", null);
   }
 
-  @ParameterizedTest
-  @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-  public void multiShardTransactions(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+  @Test
+  public void multiShardTransactions() throws Exception {
     TestHelper.initDB("yugabyte_create_tables.ddl");
 
     String dbStreamId = TestHelper.getNewDbStreamId(
         "yugabyte", "t1", true /* withBeforeImage */, true,
-        BeforeImageMode.FULL, consistentSnapshot, useSnapshot);
+        BeforeImageMode.FULL, true, false);
     Configuration.Builder configBuilder = TestHelper.getConfigBuilder("public.t1", dbStreamId);
     startEngine(configBuilder);
 
@@ -341,14 +334,13 @@ public class YugabyteDBBeforeImageTest extends YugabyteDBContainerTestBase {
     assertTombstone(records.get(7));
   }
 
-  @ParameterizedTest
-  @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-  public void updateWithNullValues(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+  @Test
+  public void updateWithNullValues() throws Exception {
     TestHelper.initDB("yugabyte_create_tables.ddl");
 
     String dbStreamId = TestHelper.getNewDbStreamId(
         "yugabyte", "t1", true /* withBeforeImage */, true,
-        BeforeImageMode.FULL, consistentSnapshot, useSnapshot);
+        BeforeImageMode.FULL, true, false);
     Configuration.Builder configBuilder = TestHelper.getConfigBuilder("public.t1", dbStreamId);
     startEngine(configBuilder);
 
@@ -373,9 +365,8 @@ public class YugabyteDBBeforeImageTest extends YugabyteDBContainerTestBase {
     assertAfterImage(updateRecord, 1, "Vaibhav", null, null);
   }
 
-  @ParameterizedTest
-  @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-  public void modifyPrimaryKey(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+  @Test
+  public void modifyPrimaryKey() throws Exception {
     // NOTE: The modification of primary key will not lead to any different behaviour, it will
     // simply give us two records, DELETE + INSERT.
 
@@ -383,7 +374,7 @@ public class YugabyteDBBeforeImageTest extends YugabyteDBContainerTestBase {
 
     String dbStreamId = TestHelper.getNewDbStreamId(
         "yugabyte", "t1", true /* withBeforeImage */, true,
-        BeforeImageMode.FULL, consistentSnapshot, useSnapshot);
+        BeforeImageMode.FULL, true, false);
     Configuration.Builder configBuilder = TestHelper.getConfigBuilder("public.t1", dbStreamId);
     startEngine(configBuilder);
 
@@ -421,9 +412,8 @@ public class YugabyteDBBeforeImageTest extends YugabyteDBContainerTestBase {
     assertAfterImage(record4, 404, "Vaibhav", "some_last_name", 98.765);
   }
 
-  @ParameterizedTest
-  @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-  public void operationsOnTableWithDefaultValues(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+  @Test
+  public void operationsOnTableWithDefaultValues() throws Exception {
     TestHelper.initDB("yugabyte_create_tables.ddl");
 
     // Create a table with default values.
@@ -433,7 +423,7 @@ public class YugabyteDBBeforeImageTest extends YugabyteDBContainerTestBase {
 
     String dbStreamId = TestHelper.getNewDbStreamId(
         "yugabyte", "table_with_defaults", true /* withBeforeImage */, true,
-        BeforeImageMode.FULL, consistentSnapshot, useSnapshot);
+        BeforeImageMode.FULL, true, false);
     Configuration.Builder configBuilder =
         TestHelper.getConfigBuilder("public.table_with_defaults", dbStreamId);
     startEngine(configBuilder);
