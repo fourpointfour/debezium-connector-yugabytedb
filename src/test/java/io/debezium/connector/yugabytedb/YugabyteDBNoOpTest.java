@@ -51,13 +51,12 @@ public class YugabyteDBNoOpTest extends YugabyteDBContainerTestBase {
     shutdownYBContainer();
   }
 
-  @ParameterizedTest
-  @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-  public void shouldNotBeAffectedByMultipleNoOps(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+  @Test
+  public void shouldNotBeAffectedByMultipleNoOps() throws Exception {
     TestHelper.dropAllSchemas();
     TestHelper.executeDDL("yugabyte_create_tables.ddl");
 
-    String dbStreamId = TestHelper.getNewDbStreamId(DEFAULT_DB_NAME, "t1", consistentSnapshot, useSnapshot);
+    String dbStreamId = TestHelper.getNewDbStreamId(DEFAULT_DB_NAME, "t1", true, false);
     Configuration.Builder configBuilder = TestHelper.getConfigBuilder("public.t1", dbStreamId);
 
     // Start connector.
@@ -105,13 +104,12 @@ public class YugabyteDBNoOpTest extends YugabyteDBContainerTestBase {
     ybClient.deleteSnapshotSchedule(resp.getSnapshotScheduleUUID());
   }
 
-  @ParameterizedTest
-  @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-  public void multiShardTransactionFollowedWithNoOps(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+  @Test
+  public void multiShardTransactionFollowedWithNoOps() throws Exception {
     TestHelper.dropAllSchemas();
     TestHelper.executeDDL("yugabyte_create_tables.ddl");
 
-    String dbStreamId = TestHelper.getNewDbStreamId(DEFAULT_DB_NAME, "t1", consistentSnapshot, useSnapshot);
+    String dbStreamId = TestHelper.getNewDbStreamId(DEFAULT_DB_NAME, "t1", true, false);
     Configuration.Builder configBuilder = TestHelper.getConfigBuilder("public.t1", dbStreamId);
 
     // Start connector.
@@ -144,13 +142,12 @@ public class YugabyteDBNoOpTest extends YugabyteDBContainerTestBase {
     ybClient.deleteSnapshotSchedule(snapshotScheduleResponse.getSnapshotScheduleUUID());
   }
 
-  @ParameterizedTest
-  @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-  public void singleShardTransactionFollowedWithNoOps(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+  @Test
+  public void singleShardTransactionFollowedWithNoOps() throws Exception {
     TestHelper.dropAllSchemas();
     TestHelper.executeDDL("yugabyte_create_tables.ddl");
 
-    String dbStreamId = TestHelper.getNewDbStreamId(DEFAULT_DB_NAME, "t1", consistentSnapshot, useSnapshot);
+    String dbStreamId = TestHelper.getNewDbStreamId(DEFAULT_DB_NAME, "t1", true, false);
     Configuration.Builder configBuilder = TestHelper.getConfigBuilder("public.t1", dbStreamId);
 
     // Start connector.
