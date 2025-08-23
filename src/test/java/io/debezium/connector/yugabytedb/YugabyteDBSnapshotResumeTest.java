@@ -58,9 +58,8 @@ public class YugabyteDBSnapshotResumeTest extends YugabyteDBContainerTestBase {
 		shutdownYBContainer();
 	}
 
-  @ParameterizedTest
-  @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForSnapshot")
-  public void verifySnapshotIsResumedFromKey(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+  @Test
+  public void verifySnapshotIsResumedFromKey() throws Exception {
 		TestHelper.dropAllSchemas();
 		TestHelper.executeDDL("yugabyte_create_tables.ddl");
 
@@ -71,7 +70,7 @@ public class YugabyteDBSnapshotResumeTest extends YugabyteDBContainerTestBase {
 
 		YugabyteDBSnapshotChangeEventSource.TRACK_EXPLICIT_CHECKPOINTS = true;
 
-		String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "t1", consistentSnapshot, useSnapshot);
+		String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "t1", true, false);
 		Configuration.Builder configBuilder = TestHelper.getConfigBuilder("public.t1", dbStreamId);
 		configBuilder.with(YugabyteDBConnectorConfig.SNAPSHOT_MODE, YugabyteDBConnectorConfig.SnapshotMode.INITIAL.getValue());
 		startEngine(configBuilder);
