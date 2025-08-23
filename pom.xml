@@ -65,6 +65,8 @@
         <version.s3.wagon>0.1.3</version.s3.wagon>
         <!-- We're tracking the API changes of the SPI. -->
         <revapi.skip>false</revapi.skip>
+        <!-- Whether to skipkip docker build -->
+        <docker.build.skip>false</docker.build.skip>
     </properties>
 
     <repositories>
@@ -596,6 +598,7 @@
                 <version>${version.docker.maven.plugin}</version>
                 <extensions>true</extensions>
                 <configuration>
+                    <skip>${docker.build.skip}</skip>
                     <images>
                         <image>
                             <name>quay.io/yugabyte/debezium-connector</name>
@@ -663,6 +666,7 @@
             <properties>
                 <skipITs>true</skipITs>
                 <maven.test.skip>true</maven.test.skip>
+                <docker.build.skip>true</docker.build.skip>
             </properties>
         </profile>
         <!--  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
