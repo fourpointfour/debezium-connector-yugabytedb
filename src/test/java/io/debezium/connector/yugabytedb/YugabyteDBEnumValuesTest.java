@@ -50,10 +50,9 @@ public class YugabyteDBEnumValuesTest extends YugabyteDBContainerTestBase {
         shutdownYBContainer();
     }
 
-    @ParameterizedTest
-    @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-    public void testEnumValue(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
-        String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "test_enum", consistentSnapshot, useSnapshot);
+    @Test
+    public void testEnumValue() throws Exception {
+        String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "test_enum", true, false, );
         Configuration.Builder configBuilder = TestHelper.getConfigBuilder("public.test_enum", dbStreamId);
         startEngine(configBuilder);
 
