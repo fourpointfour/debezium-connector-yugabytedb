@@ -18,3 +18,17 @@ Once executable permissions are given, simply run:
 ```sh
 ./scripts/setup.sh
 ```
+
+### Running tests
+
+The tests use a YugabyteDB instance running inside a docker container. The container(s) can be started using:
+
+```sh
+mvn docker:start
+```
+
+Once you are done with the tests, simply stop the container(s) with the following command:
+
+```sh
+mvn docker:stop
+```

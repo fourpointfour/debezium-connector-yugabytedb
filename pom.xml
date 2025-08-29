@@ -67,6 +67,22 @@
         <revapi.skip>false</revapi.skip>
         <!-- Whether to skipkip docker build -->
         <docker.build.skip>false</docker.build.skip>
+
+        <!-- Docker image for YugabyteDB -->
+        <version.yugabytedb>2024.2.4.1-b4</version.yugabytedb>
+        <yugabyte.host>${docker.host.address}</yugabyte.host>
+        <yugabyte.ysql.port>5433</yugabyte.ysql.port>
+        <yugabyte.master.port>7100</yugabyte.master.port>
+        <yugabyte.tserver.port>9100</yugabyte.tserver.port>
+        <yugabyte.user>yugabyte</yugabyte.user>
+        <yugabyte.password>yugabyte</yugabyte.password>
+        <yugabyte.db.name>yugabyte</yugabyte.db.name>
+        <yugabyte.encoding>UTF8</yugabyte.encoding>
+        <yugabyte.system.lang>en_US.utf8</yugabyte.system.lang>
+        <yugabyte.image>yugabytedb/yugabyte:${version.yugabytedb}</yugabyte.image>
+        <docker.skip>false</docker.skip>
+        <docker.showLogs>true</docker.showLogs>
+        <docker.initimage>/home/yugabyte/bin/yugabyted start --background=false</docker.initimage>
     </properties>
 
     <repositories>
@@ -601,13 +617,33 @@
                     <skip>${docker.build.skip}</skip>
                     <images>
                         <image>
-                            <name>quay.io/yugabyte/debezium-connector</name>
-                            <build>
-                                <contextDir>${project.basedir}</contextDir>
-                                <tags>
-                                    <tag>${project.version}</tag>
-                                </tags>
-                            </build>
+                            <!-- A Docker image using the YugabyteDB instance -->
+                            <name>${yugabyte.image}</name>
+                            <alias>yugabytedb-server</alias>
+                            <run>
+                                <namingStrategy>alias</namingStrategy>
+                                <cmd>${docker.initimage}</cmd>
+                                <env>
+                                    <PGUSER>${yugabyte.user}</PGUSER>
+                                    <PGPASSWORD>${yugabyte.password}</PGPASSWORD>
+                                    <PGDATABASE>${yugabyte.db.name}</PGDATABASE>
+                                    <LANG>${yugabyte.system.lang}</LANG>
+                                </env>
+                                <ports>
+                                    <port>${yugabyte.ysql.port}:5433</port>
+                                    <port>${yugabyte.master.port}:7100</port>
+                                    <port>${yugabyte.tserver.port}:9100</port>
+                                </ports>
+                                <log>
+                                    <prefix>yugabyte-server</prefix>
+                                    <enabled>true</enabled>
+                                    <color>yellow</color>
+                                </log>
+                            </run>
+                            <external>
+                                <type>properties</type>
+                                <mode>override</mode>
+                            </external>
                         </image>
                     </images>
                 </configuration>
@@ -618,12 +654,40 @@
                         <goals>
                             <goal>build</goal>
                         </goals>
+                        <configuration>
+                            <images>
+                                <image>
+                                    <name>quay.io/yugabyte/debezium-connector</name>
+                                    <build>
+                                        <contextDir>${project.basedir}</contextDir>
+                                        <tags>
+                                            <tag>${project.version}</tag>
+                                        </tags>
+                                    </build>
+                                </image>
+                            </images>
+                        </configuration>
                     </execution>
                     <execution>
                         <id>deploy</id>
                         <phase>deploy</phase>
                         <goals>
                             <goal>push</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>start</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>build</goal>
+                            <goal>start</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>stop</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>stop</goal>
                         </goals>
                     </execution>
                 </executions>
