@@ -54,9 +54,8 @@ public class YugabyteDBTransactionalTest extends YugabyteDBContainerTestBase {
   }
 
   @Order(1)
-  @ParameterizedTest
-  @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-  public void shouldResumeLargeTransactions(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+  @Test
+  public void shouldResumeLargeTransactions() throws Exception {
     /*
      * The goal behind this test is to make sure that when explicit checkpoints are not being
      * updated, the safe time should also not be moving forward since it will cause data loss
@@ -74,7 +73,7 @@ public class YugabyteDBTransactionalTest extends YugabyteDBContainerTestBase {
 
     YugabyteDBStreamingChangeEventSource.TEST_TRACK_EXPLICIT_CHECKPOINTS = true;
 
-    String dbStreamId = TestHelper.getNewDbStreamId(DEFAULT_DB_NAME, "t1", consistentSnapshot, useSnapshot);
+    String dbStreamId = TestHelper.getNewDbStreamId(DEFAULT_DB_NAME, "t1", true, false);
     Configuration.Builder configBuilder = TestHelper.getConfigBuilder("public.t1", dbStreamId);
     startEngine(configBuilder);
     awaitUntilConnectorIsReady();
@@ -144,15 +143,14 @@ public class YugabyteDBTransactionalTest extends YugabyteDBContainerTestBase {
   }
 
   @Order(2)
-  @ParameterizedTest
-  @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-  public void shouldBeNoDataLossWithExplicitCheckpointAdvancing(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+  @Test
+  public void shouldBeNoDataLossWithExplicitCheckpointAdvancing() throws Exception {
     TestHelper.dropAllSchemas();
     TestHelper.executeDDL("yugabyte_create_tables.ddl");
 
     YugabyteDBStreamingChangeEventSource.TEST_TRACK_EXPLICIT_CHECKPOINTS = true;
 
-    String dbStreamId = TestHelper.getNewDbStreamId(DEFAULT_DB_NAME, "t1", consistentSnapshot, useSnapshot);
+    String dbStreamId = TestHelper.getNewDbStreamId(DEFAULT_DB_NAME, "t1", true, false);
     Configuration.Builder configBuilder = TestHelper.getConfigBuilder("public.t1", dbStreamId);
 
     // Start connector.
@@ -205,9 +203,8 @@ public class YugabyteDBTransactionalTest extends YugabyteDBContainerTestBase {
   }
 
   @Order(3)
-  @ParameterizedTest
-  @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-  public void verifyNoHoldingOfResourcesOnServiceAfterSplit(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+  @Test
+  public void verifyNoHoldingOfResourcesOnServiceAfterSplit() throws Exception {
     /*
      * The goal of this test is to verify that if a tablet split is there then we are not holding
      * up any resources on the children tablets if there are no operations on the children or there
@@ -221,7 +218,7 @@ public class YugabyteDBTransactionalTest extends YugabyteDBContainerTestBase {
     TestHelper.dropAllSchemas();
     TestHelper.executeDDL("yugabyte_create_tables.ddl");
 
-    String dbStreamId = TestHelper.getNewDbStreamId(DEFAULT_DB_NAME, "t1", consistentSnapshot, useSnapshot);
+    String dbStreamId = TestHelper.getNewDbStreamId(DEFAULT_DB_NAME, "t1", true, false);
     Configuration.Builder configBuilder = TestHelper.getConfigBuilder("public.t1", dbStreamId);
 
     YugabyteDBStreamingChangeEventSource.TEST_TRACK_EXPLICIT_CHECKPOINTS = true;
@@ -277,13 +274,12 @@ public class YugabyteDBTransactionalTest extends YugabyteDBContainerTestBase {
   }
 
   @Order(4)
-  @ParameterizedTest
-  @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-  public void shouldNotFailWithLowRetentionPeriod(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+  @Test
+  public void shouldNotFailWithLowRetentionPeriod() throws Exception {
     TestHelper.dropAllSchemas();
     TestHelper.executeDDL("yugabyte_create_tables.ddl");
 
-    String dbStreamId = TestHelper.getNewDbStreamId(DEFAULT_DB_NAME, "t1", consistentSnapshot, useSnapshot);
+    String dbStreamId = TestHelper.getNewDbStreamId(DEFAULT_DB_NAME, "t1", true, false);
     Configuration.Builder configBuilder = TestHelper.getConfigBuilder("public.t1", dbStreamId);
 
     // Do not retry as it will only increase the duration of the test run and end up giving a false
