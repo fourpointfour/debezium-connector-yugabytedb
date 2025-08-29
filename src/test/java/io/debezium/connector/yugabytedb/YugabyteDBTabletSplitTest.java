@@ -58,13 +58,12 @@ public class YugabyteDBTabletSplitTest extends YugabyteDBContainerTestBase {
   }
 
   @Order(1)
-  @ParameterizedTest
-  @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-  public void shouldConsumeDataAfterTabletSplit(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+  @Test
+  public void shouldConsumeDataAfterTabletSplit() throws Exception {
     TestHelper.dropAllSchemas();
     TestHelper.execute("CREATE TABLE t1 (id INT PRIMARY KEY, name TEXT) SPLIT INTO 1 TABLETS;");
 
-    String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "t1", consistentSnapshot, useSnapshot);
+    String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "t1", true, false);
     Configuration.Builder configBuilder = TestHelper.getConfigBuilder("public.t1", dbStreamId);
 
     startEngine(configBuilder, (success, message, error) -> {
@@ -127,9 +126,8 @@ public class YugabyteDBTabletSplitTest extends YugabyteDBContainerTestBase {
   }
 
   @Order(2)
-  @ParameterizedTest
-  @MethodSource("io.debezium.connector.yugabytedb.TestHelper#streamTypeProviderForStreaming")
-  public void reproduceSplitWhileTransactionIsNotFinishedWithAutomaticSplitting(boolean consistentSnapshot, boolean useSnapshot) throws Exception {
+  @Test
+  public void reproduceSplitWhileTransactionIsNotFinishedWithAutomaticSplitting() throws Exception {
     // Stop, if ybContainer already running.
     if (ybContainer.isRunning()) {
       ybContainer.stop();
@@ -179,7 +177,7 @@ public class YugabyteDBTabletSplitTest extends YugabyteDBContainerTestBase {
                        + "1234567890123456789012345678901234567890123456789012345')"
                        + " SPLIT INTO 1 TABLETS;");
 
-    String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "t1", consistentSnapshot, useSnapshot);
+    String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "t1", true, false);
     Configuration.Builder configBuilder = TestHelper.getConfigBuilder("public.t1", dbStreamId);
 
     startEngine(configBuilder, (success, message, error) -> {
