@@ -72,6 +72,7 @@
         <version.yugabytedb>2024.2.4.1-b4</version.yugabytedb>
         <yugabyte.host>${docker.host.address}</yugabyte.host>
         <yugabyte.ysql.port>5433</yugabyte.ysql.port>
+        <yugabyte.ycql.port>9042</yugabyte.ycql.port>
         <yugabyte.master.port>7100</yugabyte.master.port>
         <yugabyte.tserver.port>9100</yugabyte.tserver.port>
         <yugabyte.user>yugabyte</yugabyte.user>
@@ -631,6 +632,7 @@
                                 </env>
                                 <ports>
                                     <port>${yugabyte.ysql.port}:5433</port>
+                                    <port>${yugabyte.ycql.port}:9042</port>
                                     <port>${yugabyte.master.port}:7100</port>
                                     <port>${yugabyte.tserver.port}:9100</port>
                                 </ports>
