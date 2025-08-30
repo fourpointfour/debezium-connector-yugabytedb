@@ -52,7 +52,7 @@ public class YugabyteDBEnumValuesTest extends YugabyteDBContainerTestBase {
 
     @Test
     public void testEnumValue() throws Exception {
-        String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "test_enum", true, false, );
+        String dbStreamId = TestHelper.getNewDbStreamId("yugabyte", "test_enum", true, false);
         Configuration.Builder configBuilder = TestHelper.getConfigBuilder("public.test_enum", dbStreamId);
         startEngine(configBuilder);
 

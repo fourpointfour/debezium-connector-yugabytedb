@@ -46,7 +46,7 @@ public class YugabyteDBPartitionTest extends YugabyteDBContainerTestBase {
   }
 
   @Test
-  public void taskShouldNotFail) throws Exception {
+  public void taskShouldNotFail() throws Exception {
     TestHelper.dropAllSchemas();
     TestHelper.execute("CREATE TABLE t1 (id INT PRIMARY KEY, name TEXT) SPLIT INTO 20 TABLETS;");
 

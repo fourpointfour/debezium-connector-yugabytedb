@@ -264,7 +264,7 @@ public class YugabyteDBConfigTest extends YugabyteDBContainerTestBase {
     }
 
     @Test
-    public void throwProperErrorMessageIfStreamIdIsNotAssociatedWithAnyTable) throws Exception {
+    public void throwProperErrorMessageIfStreamIdIsNotAssociatedWithAnyTable() throws Exception {
         TestHelper.dropAllSchemas();
 
         TestHelper.execute("CREATE TABLE dummy_table (id INT);");
