@@ -1,5 +1,9 @@
 # YugabyteDB Source Connector (gRPC)
 
+## Introduction
+
+> **Important note:** This is a fork of the YugabyteDB gRPC source connector which is originally maintained by Yugabyte. The sole purpose of this repository being maintained is to explore the possibilities of enhancements, advancements - what more it could be, how to get there.
+
 ## Contributing
 
 The repository includes the scripts to setup the development setup required for the connector. Execute the following steps to ensure that you have things setup and ready before you begin.
