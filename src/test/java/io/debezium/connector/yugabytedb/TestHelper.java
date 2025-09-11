@@ -506,20 +506,25 @@ public final class TestHelper {
                                           boolean withBeforeImage, boolean explicitCheckpointing, BeforeImageMode mode, boolean withCQL,
                                           boolean consistentSnapshot, boolean useSnapshot)
             throws Exception {
+        LOGGER.info("Creating YBClient");
         YBClient syncClient = getYbClient(MASTER_ADDRESS);
-
+        LOGGER.info("After Creating YBClient");
         YBTable placeholderTable = getYbTable(syncClient, tableName);
 
         if (placeholderTable == null) {
             throw new NullPointerException("No table found with the name " + tableName);
         }
 
+        LOGGER.info("Master tablet ID: {}", syncClient.getLeaderMasterUUID());
+
         String dbStreamId;
         try {
+            LOGGER.info("Creating stream");
             dbStreamId = syncClient.createCDCStream(placeholderTable, namespaceName,
                                                     "PROTO", explicitCheckpointing ? "EXPLICIT" : "IMPLICIT",
                                                     withBeforeImage ? mode.toString() : BeforeImageMode.CHANGE.toString(), withCQL,
                                                     consistentSnapshot, useSnapshot).getStreamId();
+            LOGGER.info("After creating stream");
         } finally {
             syncClient.close();
         }

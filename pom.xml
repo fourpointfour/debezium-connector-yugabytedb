@@ -43,7 +43,7 @@
 
         <!-- Dependency Versions -->
         <version.postgresql.driver>42.7.2</version.postgresql.driver>
-        <version.com.google.protobuf>4.30.2</version.com.google.protobuf>
+        <version.com.google.protobuf>3.25.5</version.com.google.protobuf>
         <version.kafka>3.7.0</version.kafka>
         <version.org.slf4j>1.7.36</version.org.slf4j>
         <version.logback>1.4.0</version.logback>
@@ -71,6 +71,7 @@
         <!-- Docker image for YugabyteDB -->
         <version.yugabytedb>2024.2.4.1-b4</version.yugabytedb>
         <yugabyte.host>${docker.host.address}</yugabyte.host>
+        <!-- <yugabyte.host>localhost</yugabyte.host> -->
         <yugabyte.ysql.port>5433</yugabyte.ysql.port>
         <yugabyte.ycql.port>9042</yugabyte.ycql.port>
         <yugabyte.master.port>7100</yugabyte.master.port>
@@ -83,7 +84,7 @@
         <yugabyte.image>yugabytedb/yugabyte:${version.yugabytedb}</yugabyte.image>
         <docker.skip>false</docker.skip>
         <docker.showLogs>true</docker.showLogs>
-        <docker.initimage>/home/yugabyte/bin/yugabyted start --background=false</docker.initimage>
+        <docker.init.yugabyted>/home/yugabyte/bin/yugabyted start --advertise_address $(hostname -i) --background=false</docker.init.yugabyted>
     </properties>
 
     <repositories>
@@ -622,8 +623,23 @@
                             <name>${yugabyte.image}</name>
                             <alias>yugabytedb-server</alias>
                             <run>
+                                <network>host</network>
                                 <namingStrategy>alias</namingStrategy>
-                                <cmd>${docker.initimage}</cmd>
+                                <cmd>
+                                    <!-- <exec>
+                                        <arg>/bin/bash</arg>
+                                        <arg>-c</arg>
+                                        <arg>while :; do sleep 1; done</arg>
+                                    </exec> -->
+                                    <exec>
+                                        <arg>sh</arg>
+                                        <arg>-c</arg>
+                                        <arg>${docker.init.yugabyted}</arg>
+                                    </exec>
+                                </cmd>
+                                <wait>
+                                    <time>5000</time>
+                                </wait>
                                 <env>
                                     <PGUSER>${yugabyte.user}</PGUSER>
                                     <PGPASSWORD>${yugabyte.password}</PGPASSWORD>
@@ -684,6 +700,17 @@
                             <goal>build</goal>
                             <goal>start</goal>
                         </goals>
+                    </execution>
+                    <execution>
+                        <id>start-yugabyted</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <alias>yugabytedb-server</alias>
+                            <!-- <command>${docker.init.yugabyted}</command> -->
+                        </configuration>
                     </execution>
                     <execution>
                         <id>stop</id>

@@ -46,7 +46,7 @@
         additivity="false">
         <appender-ref ref="CONSOLE" />
     </logger>
-    <logger name="org.yb.client.TabletClient" level="info"
+    <logger name="org.yb.client" level="debug"
         additivity="false">
         <appender-ref ref="CONSOLE" />
     </logger>
