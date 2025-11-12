@@ -631,18 +631,18 @@
                             <run>
                                 <network>host</network>
                                 <namingStrategy>alias</namingStrategy>
-                                <cmd>
+                                <!-- <cmd> -->
                                     <!-- <exec>
                                         <arg>/bin/bash</arg>
                                         <arg>-c</arg>
                                         <arg>while :; do sleep 1; done</arg>
                                     </exec> -->
-                                    <exec>
+                                    <!-- <exec>
                                         <arg>sh</arg>
                                         <arg>-c</arg>
                                         <arg>${docker.init.yugabyted}</arg>
-                                    </exec>
-                                </cmd>
+                                    </exec> -->
+                                <!-- </cmd> -->
                                 <wait>
                                     <time>5000</time>
                                 </wait>
@@ -711,7 +711,7 @@
                         <id>start-yugabyted</id>
                         <phase>pre-integration-test</phase>
                         <goals>
-                            <goal>exec</goal>
+                            <!-- <goal>exec</goal> -->
                         </goals>
                         <configuration>
                             <alias>yugabytedb-server</alias>
