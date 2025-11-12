@@ -200,11 +200,7 @@ public class YugabyteDBTabletSplitTest extends YugabyteDBContainerTestBase {
 
     // Wait for splitting here
     TestHelper.waitFor(Duration.ofSeconds(15));
-
-    CompletableFuture.runAsync(() -> verifyRecordCount(recordsCount))
-                .exceptionally(throwable -> {
-                    throw new RuntimeException(throwable);
-                }).get();
+    verifyRecordCount(recordsCount);
   }
 
   private void verifyRecordCount(long recordsCount) {

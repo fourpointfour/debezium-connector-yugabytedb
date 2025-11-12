@@ -26,7 +26,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class YugabyteDBCompleteTypesTest extends YugabyteDBContainerTestBase {
+public class YugabyteDBCompleteTypesTest extends YugabytedTestBase {
     @BeforeAll
     public static void beforeClass() throws SQLException {
         initializeYBContainer();
@@ -87,10 +87,7 @@ public class YugabyteDBCompleteTypesTest extends YugabyteDBContainerTestBase {
         TestHelper.execute(HelperStrings.INSERT_ALL_TYPES);
 
         List<SourceRecord> records = new ArrayList<>();
-        CompletableFuture.runAsync(() -> consumeRecords(records, recordsCount))
-                .exceptionally(throwable -> {
-                    throw new RuntimeException(throwable);
-                }).get();
+        consumeRecords(records, recordsCount);
 
         // At this point of time, it is assumed that the list has only one record, so it is safe to get the record at index 0.
         SourceRecord record = records.get(0);
@@ -150,10 +147,7 @@ public class YugabyteDBCompleteTypesTest extends YugabyteDBContainerTestBase {
 
         List<SourceRecord> records = new ArrayList<>();
 
-        CompletableFuture.runAsync(() -> consumeRecords(records, recordsCount))
-          .exceptionally(throwable -> {
-              throw new RuntimeException(throwable);
-          }).get();
+        consumeRecords(records, recordsCount);
 
         assertEquals(1, records.size());
 
@@ -191,10 +185,7 @@ public class YugabyteDBCompleteTypesTest extends YugabyteDBContainerTestBase {
 
         List<SourceRecord> records = new ArrayList<>();
 
-        CompletableFuture.runAsync(() -> consumeRecords(records, recordsCount))
-          .exceptionally(throwable -> {
-              throw new RuntimeException(throwable);
-          }).get();
+        consumeRecords(records, recordsCount);
 
         assertEquals(1, records.size());
 
@@ -235,10 +226,7 @@ public class YugabyteDBCompleteTypesTest extends YugabyteDBContainerTestBase {
 
         List<SourceRecord> records = new ArrayList<>();
 
-        CompletableFuture.runAsync(() -> consumeRecords(records, recordsCount))
-          .exceptionally(throwable -> {
-              throw new RuntimeException(throwable);
-          }).get();
+        consumeRecords(records, recordsCount);
 
         assertEquals(1, records.size());
 
