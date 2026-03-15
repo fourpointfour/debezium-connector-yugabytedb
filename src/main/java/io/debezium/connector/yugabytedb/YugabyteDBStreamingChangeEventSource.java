@@ -464,6 +464,8 @@ public class YugabyteDBStreamingChangeEventSource implements
                             final String tabletId = entry.getValue();
                             curTabletId = entry.getValue();
                             YBPartition part = new YBPartition(entry.getKey() /* tableId */, tabletId, false /* colocated */);
+                            YugabyteDBTaskContext.setTabletContext(entry.getKey(), tabletId);
+                            try {
 
                             OpId cp = offsetContext.lsn(part);
 
@@ -542,7 +544,7 @@ public class YugabyteDBStreamingChangeEventSource implements
                                 }
                             } catch (CDCErrorException cdcException) {
                                 // Check if exception indicates a tablet split.
-                                LOGGER.info("Code received in CDCErrorException: {}", cdcException.getCDCError().getCode());
+                                LOGGER.info("Code received in CDCErrorException for tablet {}: {}", tabletId, cdcException.getCDCError().getCode());
                                 if (cdcException.getCDCError().getCode() == Code.TABLET_SPLIT || cdcException.getCDCError().getCode() == Code.INVALID_REQUEST) {
                                     LOGGER.info("Encountered a tablet split on tablet {}, handling it gracefully", tabletId);
                                     if (LOGGER.isDebugEnabled()) {
@@ -580,8 +582,8 @@ public class YugabyteDBStreamingChangeEventSource implements
                                 }
                             }
 
-                            LOGGER.debug("Processing {} records from getChanges call",
-                                    response.getResp().getCdcSdkProtoRecordsList().size());
+                            LOGGER.debug("Processing {} records from getChanges call for tablet {}",
+                                    response.getResp().getCdcSdkProtoRecordsList().size(), tabletId);
                             for (CdcService.CDCSDKProtoRecordPB record : response
                                     .getResp()
                                     .getCdcSdkProtoRecordsList()) {
@@ -760,7 +762,7 @@ public class YugabyteDBStreamingChangeEventSource implements
                                         maybeWarnAboutGrowingWalBacklog(dispatched);
                                     }
                                 } catch (InterruptedException ie) {
-                                    LOGGER.error("Interrupted exception while processing change records", ie);
+                                    LOGGER.error("Interrupted exception while processing change records for tablet {}", tabletId, ie);
                                     Thread.currentThread().interrupt();
                                 }
                             }
@@ -798,6 +800,9 @@ public class YugabyteDBStreamingChangeEventSource implements
                             }
 
                             LOGGER.debug("The final opid for tablet {} is {}", part.getId(), finalOpid);
+                            } finally {
+                                YugabyteDBTaskContext.clearTabletContext();
+                            }
                         }
                         // Reset the retry count, because if flow reached at this point, it means that the connection
                         // has succeeded
