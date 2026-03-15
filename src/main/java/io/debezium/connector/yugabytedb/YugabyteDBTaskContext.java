@@ -11,6 +11,7 @@ import java.util.Collections;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import io.debezium.annotation.ThreadSafe;
 import io.debezium.config.CommonConnectorConfig;
@@ -94,6 +95,28 @@ public class YugabyteDBTaskContext extends CdcSourceTaskContext {
                 .doSnapshot(doSnapshot)
                 .withSchema(schema)
                 .build();
+    }
+
+    /**
+     * Set MDC context for the tablet currently being processed. This adds
+     * {@code dbz.tableId} and {@code dbz.tabletId} to the SLF4J MDC so that
+     * every log line emitted during per-tablet processing automatically
+     * carries tablet identification.
+     *
+     * @param tableId the table UUID
+     * @param tabletId the tablet UUID
+     */
+    public static void setTabletContext(String tableId, String tabletId) {
+        MDC.put("dbz.tableId", tableId);
+        MDC.put("dbz.tabletId", tabletId);
+    }
+
+    /**
+     * Clear the tablet MDC context previously set by {@link #setTabletContext}.
+     */
+    public static void clearTabletContext() {
+        MDC.remove("dbz.tableId");
+        MDC.remove("dbz.tabletId");
     }
 
     @Override

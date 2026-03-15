@@ -485,6 +485,8 @@ public class YugabyteDBSnapshotChangeEventSource extends AbstractSnapshotChangeE
 
                 String tabletId = tableIdToTabletId.getValue();
                 YBPartition part = new YBPartition(tableUUID, tabletId, true /* colocated */);
+                YugabyteDBTaskContext.setTabletContext(tableUUID, tabletId);
+                try {
 
                  // Check if snapshot is completed here, if it is, then break out of the loop
                 if (snapshotCompletedTablets.size() == tableToTabletForSnapshot.size()) {
@@ -586,7 +588,7 @@ public class YugabyteDBSnapshotChangeEventSource extends AbstractSnapshotChangeE
                       // Ideally there shouldn't be any BEGIN-COMMIT record while streaming
                       // the snapshot, if one is encountered then log a warning so the user knows
                       // that some debugging is required
-                      LOGGER.warn("Transactional record of type {} encountered while snapshotting the table", message.getOperation().toString());
+                      LOGGER.warn("Transactional record of type {} encountered while snapshotting table {} tablet {}", message.getOperation().toString(), tableUUID, tabletId);
                     } else if (message.isDDLMessage()) {
                       LOGGER.debug("For table {}, received a DDL record {}",
                                   message.getTable(), message.getSchema().toString());
@@ -654,7 +656,7 @@ public class YugabyteDBSnapshotChangeEventSource extends AbstractSnapshotChangeE
                       LOGGER.debug("Dispatched snapshot record successfully");
                     }
                   } catch (InterruptedException e) {
-                    LOGGER.error("Exception while processing messages for snapshot: " + e);
+                    LOGGER.error("Exception while processing messages for snapshot on table {} tablet {}", tableUUID, tabletId, e);
                     throw e;
                   }
                 }
@@ -734,8 +736,11 @@ public class YugabyteDBSnapshotChangeEventSource extends AbstractSnapshotChangeE
                 previousOffset.updateWalPosition(part, finalOpId);
 
                 tabletSafeTime.put(part.getId(), resp.getResp().getSafeHybridTime());
+                } finally {
+                    YugabyteDBTaskContext.clearTabletContext();
+                }
             }
-            
+
             // Reset the retry count here indicating that if the flow has reached here then
             // everything succeeded without any exceptions
             retryCount = 0;

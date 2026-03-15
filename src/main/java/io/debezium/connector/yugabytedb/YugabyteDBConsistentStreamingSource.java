@@ -147,6 +147,8 @@ public class YugabyteDBConsistentStreamingSource extends YugabyteDBStreamingChan
                             final String tabletId = entry.getValue();
                             curTabletId = entry.getValue();
                             YBPartition part = new YBPartition(entry.getKey(), tabletId, false);
+                            YugabyteDBTaskContext.setTabletContext(entry.getKey(), tabletId);
+                            try {
 
                             OpId cp = offsetContext.lsn(part);
 
@@ -182,7 +184,7 @@ public class YugabyteDBConsistentStreamingSource extends YugabyteDBStreamingChan
                                 } catch (CDCErrorException cdcException) {
                                     // Check if exception indicates a tablet split.
                                     if (cdcException.getCDCError().getCode() == CdcService.CDCErrorPB.Code.TABLET_SPLIT) {
-                                        LOGGER.info("Encountered a tablet split, handling it gracefully");
+                                        LOGGER.info("Encountered a tablet split on tablet {}, handling it gracefully", tabletId);
                                         if (LOGGER.isDebugEnabled()) {
                                             cdcException.printStackTrace();
                                         }
@@ -196,8 +198,8 @@ public class YugabyteDBConsistentStreamingSource extends YugabyteDBStreamingChan
                                     }
                                 }
 
-                                LOGGER.debug("Processing {} records from getChanges call",
-                                        response.getResp().getCdcSdkProtoRecordsList().size());
+                                LOGGER.debug("Processing {} records from getChanges call for tablet {}",
+                                        response.getResp().getCdcSdkProtoRecordsList().size(), tabletId);
                                 for (CdcService.CDCSDKProtoRecordPB record : response
                                         .getResp()
                                         .getCdcSdkProtoRecordsList()) {
@@ -238,6 +240,9 @@ public class YugabyteDBConsistentStreamingSource extends YugabyteDBStreamingChan
                                 // for the snapshot, this block must not commit during catch up streaming.
                                 // CDCSDK Find out why this fails : connection.commit();
                             }
+                            } finally {
+                                YugabyteDBTaskContext.clearTabletContext();
+                            }
                         }
 
                         Optional<Message> pollMessage = merger.poll();
@@ -259,7 +264,7 @@ public class YugabyteDBConsistentStreamingSource extends YugabyteDBStreamingChan
                         retryCount = 0;
                     }
                 } catch (AssertionError ae) {
-                    LOGGER.error("Assertion error received: {}", ae);
+                    LOGGER.error("Assertion error received for tablet {}: {}", curTabletId, ae);
                     merger.dumpState();
 
                     // The connector should ideally be stopped if this kind of state is reached.
@@ -273,8 +278,8 @@ public class YugabyteDBConsistentStreamingSource extends YugabyteDBStreamingChan
                     }
 
                     // If there are retries left, perform them after the specified delay.
-                    LOGGER.warn("Error while trying to get the changes from the server; will attempt retry {} of {} after {} milli-seconds. Exception: {}",
-                            retryCount, connectorConfig.maxConnectorRetries(), connectorConfig.connectorRetryDelayMs(), e);
+                    LOGGER.warn("Error while trying to get the changes from the server for tablet {}; will attempt retry {} of {} after {} milli-seconds. Exception: {}",
+                            curTabletId, retryCount, connectorConfig.maxConnectorRetries(), connectorConfig.connectorRetryDelayMs(), e);
                     LOGGER.warn("Stacktrace", e);
 
                     try {
@@ -428,7 +433,7 @@ public class YugabyteDBConsistentStreamingSource extends YugabyteDBStreamingChan
                 maybeWarnAboutGrowingWalBacklog(dispatched);
             }
         } catch (InterruptedException ie) {
-            LOGGER.error("Interrupted exception while processing change records", ie);
+            LOGGER.error("Interrupted exception while processing change records for tablet {}", tabletId, ie);
             Thread.currentThread().interrupt();
         }
 
